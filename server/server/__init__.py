@@ -9,18 +9,24 @@ from pathlib import Path
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument("map_json", type=Path, help="Path to map json")
-    parser.add_argument("tileset_json", type=Path, help="Path to tileset json")
-    parser.add_argument("image_path", type=Path, help="Path to image")
+    parser.add_argument("map_tileset_json", type=Path, help="Path to tileset json")
+    parser.add_argument("map_image_path", type=Path,
+                        help="Path to image")
+    parser.add_argument("entities_tileset_json", type=Path,
+                        help="Path to entities tileset json")
+    parser.add_argument("entities_image_path", type=Path, help="Path to image")
     args = parser.parse_args()
 
     server = None
     with args.map_json.open() as m:
-        with args.tileset_json.open() as t:
-            with args.image_path.open("rb") as i:
-                m = DBMap(json.load(m),
-                          Tileset(json.load(t),
-                                  i.read()))
-                server = Server(m)
+        with args.map_tileset_json.open() as t:
+            with args.entities_tileset_json.open() as e:
+                with args.map_image_path.open("rb") as i:
+                    with args.entitites_image_path.open("rb") as ei:
+                        m = DBMap(json.load(m), Tileset(e, ei.read()),
+                                  Tileset(json.load(t),
+                                          i.read()))
+                        server = Server(m)
 
     interface = server.get_interface()
 
