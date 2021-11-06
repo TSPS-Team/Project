@@ -1,22 +1,25 @@
 # immovable objects like road, wasteland, barracks
 
 
-class MapChank:
-    def __init__(self, chank_id=0):
+class MapChankFirstLayer:
+    def __init__(self, chank_id=0, pathable=True):
         self.object_id = chank_id
-        self.pathable = self.get_pathable(chank_id)
+        self.pathable = pathable
 
-    @staticmethod
-    def get_pathable():
-        pathable = True         # maybe we just make pathable objects have id lesser than X et cetera
-        return pathable
+    def get_pathable(self):
+        return self.pathable
 
 
-class Terrain(MapChank):
+class Terrain(MapChankFirstLayer):
     def __init__(self):
         pass
 
 
-class Interactive(MapChank):
+class Road(Terrain):
+    def __init__(self):
+        pass
+
+
+class Interactive(MapChankFirstLayer):
     def __init__(self):
         pass
