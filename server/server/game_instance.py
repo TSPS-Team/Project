@@ -1,5 +1,5 @@
-import global_map
-import game_config
+from . import global_map
+from . import game_config
 
 
 class GameInstance:
