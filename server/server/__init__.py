@@ -22,8 +22,10 @@ def main():
         with args.map_tileset_json.open() as t:
             with args.entities_tileset_json.open() as e:
                 with args.map_image_path.open("rb") as i:
-                    with args.entitites_image_path.open("rb") as ei:
-                        m = DBMap(json.load(m), Tileset(e, ei.read()),
+                    with args.entities_image_path.open("rb") as ei:
+                        m = DBMap(json.load(m),
+                                  Tileset(json.load(e),
+                                          ei.read()),
                                   Tileset(json.load(t),
                                           i.read()))
                         server = Server(m)
@@ -35,17 +37,16 @@ def main():
     while command != "exit":
         direction = None
         if command == "w":
-            direction = (0, 1)
+            direction = (0, -1)
         elif command == "a":
             direction = (-1, 0)
         elif command == "s":
-            direction = (0, -1)
+            direction = (0, 1)
         elif command == "d":
             direction = (1, 0)
 
         interface.move(player_id, direction)
-        print("Move")
 
-        #image = interface.get_view(player_id)
-        #image.save("out.png")
+        image = interface.get_view(player_id)
+        image.save("out.png")
         command = input()
