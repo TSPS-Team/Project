@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from .server import *
+from server.server.server import *
 import argparse
 import json
 from PIL import Image
