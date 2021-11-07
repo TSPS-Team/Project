@@ -4,16 +4,23 @@ import random
 
 
 class GlobalMap:
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-        self.global_map_first = np.zeros((self.height, self.width), dtype=np.uint16)        # biomes
-        self.global_map_second = np.zeros((self.height, self.width), dtype=np.uint16)       # terrain like mountains roads
-        self.global_map_objects = np.zeros((self.height, self.width), dtype=np.uint16)      # barraks, castles, etc.
-        self.global_map_armies = np.zeros((self.height, self.width), dtype=np.uint16)       # heroes and items
-        self.global_map_passable = np.zeros((self.height, self.width), dtype=np.bool_)
+    def __init__(self, config: game_config.Config):
+        self.config = config
+        self.global_map_first = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)        # biomes
+        self.global_map_second = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)       # terrain like mountains roads
+        self.global_map_objects = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)      # barraks, castles, etc.
+        self.global_map_armies = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)       # heroes and items
+        self.global_map_passable = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.bool_)
 
-    def change_map_chank(self, x_coord, y_coord, layer, new_id):
+        self.global_fog_map = np.zeros((config.player_amount, config.gl_map_height, config.gl_map_width), dtype=np.uint8)
+
+        self.objects = self.create_objects()
+
+    def create_objects(self) -> list:
+        for i in range(self.config.player_amount+1):
+             pass
+
+    def change_map_chunk(self, x_coord: int, y_coord: int, layer: int, new_id: int):
         if layer == 0:
             self.global_map_first[y_coord, x_coord] = new_id
         elif layer == 1:
@@ -24,20 +31,21 @@ class GlobalMap:
             self.global_map_armies[y_coord, x_coord] = new_id
 
     def update_passable(self):
-        for i in range(game_config.Config.gl_map_height):
-            for j in range(game_config.Config.gl_map_width):
-                if (self.get_passable(self.global_map_first[i, j])) and (self.get_passable(self.global_map_second[i, j])) and (self.get_passable(self.global_map_objects[i, j])) and (self.get_passable(self.global_map_armies[i, j])):
+        for i in range(self.config.gl_map_height):
+            for j in range(self.config.gl_map_width):
+                if (self.get_passable(self.global_map_first[i, j])) and (self.get_passable(self.global_map_second[i, j])) and \
+                        (self.get_passable(self.global_map_objects[i, j])) and (self.get_passable(self.global_map_armies[i, j])):
                     self.global_map_passable[i, j] = True
                 else:
                     self.global_map_passable[i, j] = False
 
     @staticmethod
-    def get_passable(id):
+    def get_passable(chunk_id) -> bool:
         pass
 
-    def randomize_chanks(self):
-        for i in range(game_config.Config.gl_map_height):
-            for j in range(game_config.Config.gl_map_width):
+    def randomize_chunks(self):
+        for i in range(self.config.gl_map_height):
+            for j in range(self.config.gl_map_width):
                 self.global_map[i, j] = random.randrange(0, 256, 1)
 
     def generate_map(self):
