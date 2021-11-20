@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 from .db_map import *
 from .renderer import TilesetRenderer
+from .game_instance import *
 from PIL import Image
 import numpy as np
 
 class Interface:
     def __init__(self, server):
         self.server = server
+
+    def get_teams(self) -> set[int]:
+        return self.server.get_teams();
 
     def move(self, player_id, direction):
         self.server.move(player_id, direction)
@@ -25,9 +29,14 @@ class Server:
         self.player_pos = (20, 20)
         self.renderer = TilesetRenderer(self.game_map.tilesets[0])
 
+        self._game_instance = GameInstance()
+
     def _load_map(self, m : DBMap):
         #NOTE Just for prototype
         return m
+
+    def get_teams(self) -> set[int]:
+        return self.game_instance =
 
     def get_interface(self) -> Interface:
         return Interface(self)

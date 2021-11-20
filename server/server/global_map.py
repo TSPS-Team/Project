@@ -1,4 +1,6 @@
 import numpy as np
+
+from .db_map import DBMap
 from . import game_config
 from . import object_wrapper
 from . import castle
@@ -6,7 +8,7 @@ import random
 
 
 class GlobalMap:
-    def __init__(self, config: game_config.Config):
+    def __init__(self, config: game_config.Config, db_map : DBMap):
         self.config = config
         self.global_map_first = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)        # biomes
         self.global_map_second = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)       # terrain like mountains roads

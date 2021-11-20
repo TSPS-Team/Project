@@ -25,7 +25,38 @@ class Tileset:
 
 
 class DBMap:
+    def layers(self):
+        return (layer for layer in self.json["layers"])
+
+    def object_layers(self):
+        return (layer for layer in self.layers() if layer["type"] == "objectgoup")
+
+    def tile_layers(self):
+        return (layer for layer in self.layers() if layer["type"] == "tilelayer")
+
+    def objects(self):
+        return (obj for layer in self.object_layers() for obj in layer)
+
+    def properties(self) -> list:
+        return self.json["properties"]
+
+    @staticmethod
+    def property(object, name, default=None):
+        return next((prop for prop in object["properties"]
+                    if prop["name"] == name), default)
+
+    def map_property(self, name, default=None):
+        return next((prop for prop in self.properties()
+                    if prop["name"] == name), default)
+
+    @staticmethod
+    def is_castle(object):
+        return DBMap.property(object, "Type", {}).get("value") == "Castle"
+
     def __init__(self, image_json, entities_tileset, *tilesets):
-        self._json = image_json
+        self.json = image_json
         self.entities_tileset = entities_tileset
         self.tilesets = [*tilesets]
+
+    def validate(self):
+        pass
