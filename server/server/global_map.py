@@ -1,5 +1,7 @@
 import numpy as np
 from . import game_config
+from . import object_wrapper
+from . import castle
 import random
 
 
@@ -14,11 +16,12 @@ class GlobalMap:
 
         self.global_fog_map = np.zeros((config.player_amount, config.gl_map_height, config.gl_map_width), dtype=np.uint8)
 
-        self.objects = self.create_objects()
+        self.castle_hero = self.create_castle_hero()
 
-    def create_objects(self) -> list:
+    def create_castle_hero(self) -> list:
+        castles_heroes = []
         for i in range(self.config.player_amount+1):
-             pass
+            pass
 
     def change_map_chunk(self, x_coord: int, y_coord: int, layer: int, new_id: int):
         if layer == 0:

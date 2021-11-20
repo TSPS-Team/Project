@@ -2,7 +2,7 @@ class Hero:
     def __init__(self, hero_id=0, player_id=1, attack=0, deffence=0, intelligence=0, magic_resist=0, mana=0, speed=5):
         self.id = hero_id
         self.player_id = player_id
-        self.hero_name = self.get_name()
+        self.hero_name = self.generate_name()
 
         self.attack = attack
         self.deffence = deffence
@@ -13,7 +13,6 @@ class Hero:
 
 #        self.army =
 
-
     @staticmethod
-    def get_name() -> str:
+    def generate_name() -> str:
         pass
