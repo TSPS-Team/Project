@@ -44,6 +44,9 @@ def main():
             direction = (0, 1)
         elif command == "d":
             direction = (1, 0)
+        else:
+            command = input()
+            continue
 
         interface.move(player_id, direction)
 
