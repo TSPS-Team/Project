@@ -5,6 +5,7 @@ from . import game_config
 from . import object_wrapper
 from . import castle
 from . import hero
+from . import object_pathlike
 import random
 
 
@@ -15,14 +16,15 @@ class GlobalMap:
         self.global_map_second = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)         # terrain like mountains roads
         self.global_map_objects = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)        # barraks, castles, etc.
         self.global_map_armies = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)         # heroes and items
-        self.global_map_passable = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.bool_)
+        self.global_map_passable = np.full((config.gl_map_height, config.gl_map_width), True, dtype=np.bool_)
 
         self.global_fog_map = np.zeros((config.player_amount, config.gl_map_height, config.gl_map_width), dtype=np.uint8)
 
-        self.global_map_object_backcall = np.full((3, config.gl_map_height, config.gl_map_width), None, dtype=np.object_)       # [0] castle; [1] player; [2] items
-        self.teams_castle_hero = self.create_teams_castle_hero()                                                # list of objects that belong to teams: neutral[0]; player1[1]...
+        self.global_map_object_backcall = np.full((2, config.gl_map_height, config.gl_map_width), None, dtype=np.object_)       # [0] castle; [1] player
+        self.players_castle_hero = self.create_players_castle_hero()                                                # list of objects that belong to players: neutral[0]; player1[1]...
+        self.global_map_object_items = np.full((config.gl_map_height, config.gl_map_width), None, dtype=np.object_)             # items
 
-    def create_teams_castle_hero(self) -> list:
+    def create_players_castle_hero(self) -> list:
         castles_heroes = []
         for i in range(self.config.player_amount+1):
             default_castle = castle.Castle()
@@ -31,11 +33,19 @@ class GlobalMap:
             temp_hero_coord = [10*i, 10*i]
             object_castle_hero = object_wrapper.ObjectWrapper(default_castle, temp_castle_coord, default_hero, temp_hero_coord)
             castles_heroes.append(object_castle_hero)
-            self.global_map_object_backcall[self.coord_parse(temp_castle_coord)]
+            object_path_castle = object_pathlike.ObjectPathlike(i, "castle", 0)
+            self.global_map_object_backcall[self.coord_parse(0, temp_castle_coord)] = object_path_castle
+            object_path_hero = object_pathlike.ObjectPathlike(i, "hero", 0)
+            self.global_map_object_backcall[self.coord_parse(1, temp_hero_coord)] = object_path_hero
+
+        return castles_heroes
+
+    def move_hero(self, player_id, hero_id, direction):
+        pass
 
     @staticmethod
-    def coord_parse(coords):
-        return coords[0], coords[1]
+    def coord_parse(layer, coords):
+        return layer, coords[0], coords[1]
 
     def change_map_chunk(self, x_coord: int, y_coord: int, layer: int, new_id: int):
         if layer == 0:
