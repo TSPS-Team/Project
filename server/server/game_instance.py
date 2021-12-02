@@ -8,3 +8,7 @@ class GameInstance:
         self._config = game_config.Config()
         self._config.set_config_from_db_map(db_map)
         self._global_map = global_map.GlobalMap(self._config, db_map)
+
+    def run(self):
+        while True:
+            pass

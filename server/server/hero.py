@@ -1,3 +1,5 @@
+import numpy as np
+
 class Hero:
     def __init__(self, hero_id=0, player_id=1, attack=0, deffence=0, intelligence=0, magic_resist=0, mana=0, speed=5):
         self.id = hero_id
@@ -11,8 +13,10 @@ class Hero:
         self.mana = mana
         self.speed = speed
 
-#        self.army =
+        self.army = np.full(7, None, dtype=np.object_)
 
     @staticmethod
     def generate_name() -> str:
-        pass
+        return "Napoleon"
+
+

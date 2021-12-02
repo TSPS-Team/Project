@@ -28,7 +28,7 @@ class GlobalMap:
         castles_heroes = []
         for i in range(self.config.player_amount+1):
             default_castle = castle.Castle()
-            default_hero = hero.Hero()
+            default_hero = hero.Hero(player_id=i)
             temp_castle_coord = [10*i, 10*i]
             temp_hero_coord = [10*i, 10*i]
             object_castle_hero = object_wrapper.ObjectWrapper(default_castle, temp_castle_coord, default_hero, temp_hero_coord)
@@ -43,9 +43,8 @@ class GlobalMap:
     def move_hero(self, player_id, hero_id, direction):
         pass
 
-    @staticmethod
-    def coord_parse(layer, coords):
-        return layer, coords[0], coords[1]
+    def start_of_week(self):
+        pass
 
     def change_map_chunk(self, x_coord: int, y_coord: int, layer: int, new_id: int):
         if layer == 0:
@@ -65,6 +64,10 @@ class GlobalMap:
                     self.global_map_passable[i, j] = True
                 else:
                     self.global_map_passable[i, j] = False
+
+    @staticmethod
+    def coord_parse(layer, coords):
+        return layer, coords[0], coords[1]
 
     @staticmethod
     def get_passable(chunk_id) -> bool:
