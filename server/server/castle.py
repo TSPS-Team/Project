@@ -1,14 +1,18 @@
 import numpy as np
-
+from . import magic_book
 
 class Castle:
-    def __init__(self, type="oplot"):
+    def __init__(self, unit_dict ,type="rampart"):
         self.town_hall_lvl = 1
         self.magic_tower_lvl = 0
+        self.magic_book = magic_book.MagicBook()
         self.units_lvl = np.zeros(7, dtype=np.uint8)
         self.units_increase = np.zeros(7, dtype=np.uint8)                                       # how many units come every week
         self.units_amount_available = np.zeros(7, dtype=np.uint64)                              # how many u can buy at moment
-        self.units_price = np.array([20, 50, 80, 180, 400, 900, 2250], dtype=np.uint64)
+        temp = list()
+        for i in range(1,8):
+            temp.append(unit_dict.stat_dictionary.get(type+str(i)).get("price"))
+        self.units_price = np.array(temp, dtype=np.uint64)
 
         self.garrison = np.full(7, None, dtype=np.object_)                                      # garrison, can be exchanged with hero
         self.staying_hero = None

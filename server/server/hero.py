@@ -15,6 +15,8 @@ class Hero:
 
         self.army = np.full(7, None, dtype=np.object_)
 
+        self.magic_book = None
+
     @staticmethod
     def generate_name() -> str:
         return "Napoleon"

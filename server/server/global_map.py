@@ -6,6 +6,7 @@ from . import object_wrapper
 from . import castle
 from . import hero
 from . import object_pathlike
+from . import unit_dictionary
 import random
 
 
@@ -24,10 +25,13 @@ class GlobalMap:
         self.players_castle_hero = self.create_players_castle_hero()                                                # list of objects that belong to players: neutral[0]; player1[1]...
         self.global_map_object_items = np.full((config.gl_map_height, config.gl_map_width), None, dtype=np.object_)             # items
 
+        self.unit_dict = unit_dictionary.UnitDictionary()
+
     def create_players_castle_hero(self) -> list:
         castles_heroes = []
         for i in range(self.config.player_amount+1):
-            default_castle = castle.Castle()
+            castle_type = "rampart"
+            default_castle = castle.Castle(self.unit_dict, castle_type)
             default_hero = hero.Hero(player_id=i)
             temp_castle_coord = [10*i, 10*i]
             temp_hero_coord = [10*i, 10*i]
