@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
-from server.server.server import *
+from .server import *
 import argparse
 import json
 from PIL import Image
 from pathlib import Path
+
 
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
