@@ -1,4 +1,6 @@
 from enum import Enum
+
+from server.server.states import GlobalState, ServerState
 from .db_map import DBMap
 from . import global_map
 from . import game_config
@@ -29,9 +31,22 @@ class GameInstance:
 
         if self.day_of_week == DayOfWeek.Monday:
             self.start_of_week()
+        #TODO
+
+
+        can_move, player = check_can_move_simultaniously()
+        if can_move:
+            return ServerState(GlobalState.WaitingForActionEvery)
+        else:
+            #TODO
+            return ServerState(GlobalState.WaitingForActionOne, player=player)
+
+    def check_can_move_simultaniously(self):
+        #TODO
+        return True
 
     def start_of_week(self):
-        pass
+        #TODO
 
     def run(self):
         while True:
