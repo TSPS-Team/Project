@@ -1,0 +1,5 @@
+-e ../server
+Pillow==8.4.0
+redis==4.0.2
+python-telegram-bot==13.8.1
+numpy==1.21.2

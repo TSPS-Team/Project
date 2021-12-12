@@ -2,7 +2,7 @@ import sqlite3
 
 
 def __sqlite(query: str):
-    con = sqlite3.connect("../resources_manager/ttbm.db")
+    con = sqlite3.connect("ttbm.db")
     cur = con.cursor()
 
     cur.execute(query)

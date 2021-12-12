@@ -1,9 +1,10 @@
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext, ConversationHandler, \
     MessageHandler, Filters
-from config import bot_token
-from resources_manager.sql import sqlite_3_add_user, sqlite_3_select_identity_name
-import server.server
+from .config import bot_token
+from .resources_manager.sql import sqlite_3_add_user, sqlite_3_select_identity_name
+
+import server
 import json
 
 interface = None
@@ -252,6 +253,7 @@ class CallbackQuery:
 
 
 def main():
+
     bot = Bot(token=bot_token)
     updater = Updater(bot=bot)
 
