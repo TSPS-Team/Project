@@ -144,12 +144,12 @@ class Handler:
                 with open(r"D:\AllAssetsPreview.json") as e:
                     with open(r"D:\SP-Tileset.png", "rb") as i:
                         with open(r"D:\AllAssetsPreview.png", "rb") as ei:
-                            m = server.server.DBMap(json.load(m),
-                                    server.server.Tileset(json.load(e),
+                            m = server.DBMap(json.load(m),
+                                    server.Tileset(json.load(e),
                                             ei.read()),
-                                    server.server.Tileset(json.load(t),
+                                    server.Tileset(json.load(t),
                                             i.read()))
-        s = server.server.Server(m)
+        s = server.Server(m)
 
         global interface
         interface = s.get_interface()
