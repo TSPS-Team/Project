@@ -23,8 +23,8 @@ class Interface:
     def end_move(self, player_id):
         self.server.end_move(player_id)
 
-    def get_view(self, player_id) -> Image.Image:
-        return self.server.get_view(player_id)
+    def get_image(self, position, player_id) -> Image.Image:
+        return self.server.get_image(self, position, player_id)
 
 class Server:
     def __init__(self, m : DBMap):
@@ -51,7 +51,7 @@ class Server:
     def get_interface(self) -> Interface:
         return Interface(self)
 
-    def get_view(self, player_id):
+    def get_image(self, position, player_id):
         #NOTE Just for prototype
         layers = []
         for layer in self.game_map.json["layers"]:
