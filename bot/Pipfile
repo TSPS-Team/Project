@@ -1,0 +1,16 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+masters-of-the-dungeon-server = {editable = true, file = "file:///home/denicon/projects/TSPS/Project/server"}
+redis = "==4.0.2"
+python-telegram-bot = "==13.8.1"
+numpy = "==1.21.2"
+Pillow = "==8.4.0"
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"

@@ -12,7 +12,12 @@ count_1 = 0
 ready_1 = False
 players = {}
 
-LOGIN, SIGNUP, LOBBY, WAITROOM, GAME = range(5)
+from .lobby import LobbyManager, LobbyState, MenuState, Player
+lobby_manager = LobbyManager()
+
+DEV_TEST = True
+
+LOGGEDIN, LOGIN, SIGNUP, LOBBY, WAITROOM, GAME = range(6)
 
 
 choice_start = InlineKeyboardMarkup(
@@ -78,8 +83,21 @@ choice_move = InlineKeyboardMarkup(
         ]
 )
 
+choice_main_menu = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Join Public Lobby",
+                                     callback_data="public"),
+                InlineKeyboardButton(text="Join Private Lobby",
+                                     callback_data="private"),
+                InlineKeyboardButton(text="Create Lobby",
+                                     callback_data="create")
+            ]
+        ]
+)
 
 class Handler:
+
     def start_handler(update: Update, context: CallbackContext):
         update.message.reply_text('Welcome to the game. First of all, log in or sign up to the bot',
                                   reply_markup=choice_start)
@@ -144,12 +162,12 @@ class Handler:
                 with open(r"D:\AllAssetsPreview.json") as e:
                     with open(r"D:\SP-Tileset.png", "rb") as i:
                         with open(r"D:\AllAssetsPreview.png", "rb") as ei:
-                            m = server.server.DBMap(json.load(m),
-                                    server.server.Tileset(json.load(e),
+                            m = server.DBMap(json.load(m),
+                                    server.Tileset(json.load(e),
                                             ei.read()),
-                                    server.server.Tileset(json.load(t),
+                                    server.Tileset(json.load(t),
                                             i.read()))
-        s = server.server.Server(m)
+        s = server.Server(m)
 
         global interface
         interface = s.get_interface()
@@ -165,6 +183,19 @@ class Handler:
 
 
 class CallbackQuery:
+    def callback_main_menu_handler(update: Update, context: CallbackContext):
+        call_data = update.callback_query.data
+        player = players[update.effective_user.id]
+
+        if call_data == "public":
+            player.lobby = lobby_manager.connect_any(player)
+            player.state = LobbyState(player)
+            return LOBBY
+        elif call_data == "private":
+            pass
+        elif call_data == "create":
+            pass
+
     def callback_query_start_handler(update: Update, context: CallbackContext):
         call_data = update.callback_query.data
         chat_id = update.callback_query.message.chat.id
@@ -252,41 +283,75 @@ class CallbackQuery:
         return GAME
 
 
+def logged_in_callback(update: Update, context: CallbackContext):
+    player = players[update.effective_user.id]
+    return player.state.callback(update, context)
+
+def logged_in_text_callback(update: Update, context: CallbackContext):
+    player = players[update.effective_user.id]
+    return player.state.text_callback(update, context)
+
+
+def dev_start_handler(update: Update, context: CallbackContext):
+    user = update.effective_user
+    player = Player(user.first_name, user.id)
+    players[player.id] = player
+    player.state = MenuState(player, context.bot, lobby_manager)
+
+    return LOGGEDIN
+
+
 def main():
 
     bot = Bot(token=bot_token)
     updater = Updater(bot=bot)
 
-    conv_handler = ConversationHandler(
-        entry_points=[
-            CommandHandler('start', Handler.start_handler),
-            CallbackQueryHandler(CallbackQuery.callback_query_start_handler)
-        ],
-        states={
-            LOGIN: [
-                MessageHandler(Filters.all, Handler.login_handler)
+
+    if not DEV_TEST:
+        conv_handler = ConversationHandler(
+            entry_points=[
+                CommandHandler('start', Handler.start_handler),
             ],
-            SIGNUP: [
-                MessageHandler(Filters.all, Handler.signup_handler),
-                CallbackQueryHandler(CallbackQuery.callback_query_signup_handler)
+            states={
+                LOGIN: [
+                    MessageHandler(Filters.all, Handler.login_handler)
+                ],
+                SIGNUP: [
+                    MessageHandler(Filters.all, Handler.signup_handler),
+                    CallbackQueryHandler(CallbackQuery.callback_query_signup_handler)
+                ],
+                LOBBY: [
+                    CommandHandler('lobby', Handler.lobby_handler),
+                    CallbackQueryHandler(CallbackQuery.callback_query_lobby_handler)
+                ],
+                WAITROOM: [
+                    CommandHandler('waitroom', Handler.waitroom_handler),
+                    CallbackQueryHandler(CallbackQuery.callback_query_waitroom_handler)
+                ],
+                GAME: [
+                    CommandHandler('game', Handler.game_handler),
+                    CallbackQueryHandler(CallbackQuery.callback_query_game_handler)
+                ],
+            },
+            fallbacks=[
+                CommandHandler('cancel', Handler.cancel_handler),
             ],
-            LOBBY: [
-                CommandHandler('lobby', Handler.lobby_handler),
-                CallbackQueryHandler(CallbackQuery.callback_query_lobby_handler)
+        )
+    else:
+        conv_handler = ConversationHandler(
+            entry_points=[
+                CommandHandler('start', dev_start_handler),
             ],
-            WAITROOM: [
-                CommandHandler('waitroom', Handler.waitroom_handler),
-                CallbackQueryHandler(CallbackQuery.callback_query_waitroom_handler)
-            ],
-            GAME: [
-                CommandHandler('game', Handler.game_handler),
-                CallbackQueryHandler(CallbackQuery.callback_query_game_handler)
-            ],
-        },
-        fallbacks=[
-            CommandHandler('cancel', Handler.cancel_handler),
-        ],
-    )
+            states={
+                LOGGEDIN: [
+                    CallbackQueryHandler(logged_in_callback),
+                    MessageHandler(Filters.text, logged_in_text_callback)
+                ]
+            },
+            fallbacks=[
+                CommandHandler('cancel', Handler.cancel_handler),
+            ]
+        )
 
     updater.dispatcher.add_handler(conv_handler)
     updater.start_polling()
