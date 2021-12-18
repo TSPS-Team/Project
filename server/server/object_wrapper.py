@@ -1,5 +1,5 @@
 class ObjectWrapper:
-    def __init__(self, castle=None, castle_coord=[], hero=None, hero_coord=[]):
+    def __init__(self, castle=None, castle_coord=(), hero=None, hero_coord=()):
         self.castles = []
         if castle is not None:
             self.castles.append(castle)

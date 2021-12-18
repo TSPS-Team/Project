@@ -11,7 +11,7 @@ import random
 
 
 class GlobalMap:
-    def __init__(self, config: game_config.Config, db_map : DBMap):
+    def __init__(self, config: game_config.Config, db_map : DBMap, unit_dict=None ):
         self.config = config
         self.global_map_first = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)          # biomes
         self.global_map_second = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)         # terrain like mountains roads
@@ -19,13 +19,16 @@ class GlobalMap:
         self.global_map_armies = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)         # heroes and items
         self.global_map_passable = np.full((config.gl_map_height, config.gl_map_width), True, dtype=np.bool_)
 
-        self.global_fog_map = np.zeros((config.player_amount, config.gl_map_height, config.gl_map_width), dtype=np.uint8)
+        self.global_map_fog = np.zeros((config.player_amount, config.gl_map_height, config.gl_map_width), dtype=np.uint8)
 
-        self.global_map_object_backcall = np.full((2, config.gl_map_height, config.gl_map_width), None, dtype=np.object_)       # [0] castle; [1] player
+        self.global_map_object_backcall = np.full((2, config.gl_map_height, config.gl_map_width), None, dtype=np.object_)       # [0] castle; [1] hero
         self.players_castle_hero = self.create_players_castle_hero()                                                # list of objects that belong to players: neutral[0]; player1[1]...
         self.global_map_object_items = np.full((config.gl_map_height, config.gl_map_width), None, dtype=np.object_)             # items
 
-        self.unit_dict = unit_dictionary.UnitDictionary()
+        if unit_dict is None:
+            self.unit_dict = unit_dictionary.UnitDictionary()
+        else:
+            self.unit_dict = unit_dict
 
     def create_players_castle_hero(self) -> list:
         castles_heroes = []
@@ -33,8 +36,8 @@ class GlobalMap:
             castle_type = "rampart"
             default_castle = castle.Castle(self.unit_dict, castle_type)
             default_hero = hero.Hero(player_id=i)
-            temp_castle_coord = [10*i, 10*i]
-            temp_hero_coord = [10*i, 10*i]
+            temp_castle_coord = (10*i, 10*i)
+            temp_hero_coord = (10*i, 10*i+1)
             object_castle_hero = object_wrapper.ObjectWrapper(default_castle, temp_castle_coord, default_hero, temp_hero_coord)
             castles_heroes.append(object_castle_hero)
             object_path_castle = object_pathlike.ObjectPathlike(i, "castle", 0)
@@ -44,8 +47,19 @@ class GlobalMap:
 
         return castles_heroes
 
-    def move_hero(self, player_id, hero_id, direction):
-        pass
+    def move_hero(self, object_id: tuple, direction: str) -> int:               # object_id[0] - player, object_id[1] - object_type, object_id[2] - object_id
+        player = object_id[0]
+        object_id_local = object_id[2]
+        delta_coord = self.direction_parse(direction)
+        current_coord = self.players_castle_hero[player].heroes_coord[object_id_local]
+        if self.global_map_passable[current_coord[0]+delta_coord[0],current_coord[1]+delta_coord[1]]:
+            self.global_map_armies[current_coord[0]+delta_coord[0], current_coord[1]+delta_coord[1]] = self.global_map_armies[current_coord[0], current_coord[1]]
+            self.global_map_armies[current_coord[0], current_coord[1]] = 0
+            self.global_map_object_backcall[current_coord[0]+delta_coord[0], current_coord[1]+delta_coord[1]] = self.global_map_object_backcall[current_coord[0], current_coord[1]]
+            self.global_map_object_backcall[current_coord[0], current_coord[1]] = None
+            self.players_castle_hero[player].heroes_coord[object_id_local] = (current_coord[0]+delta_coord[0], current_coord[1]+delta_coord[1])
+            return 0
+        return -1
 
     def start_of_week(self):
         pass
@@ -68,6 +82,20 @@ class GlobalMap:
                     self.global_map_passable[i, j] = True
                 else:
                     self.global_map_passable[i, j] = False
+
+    @staticmethod
+    def direction_parse(direction: str) -> tuple:
+        delta_x = 0
+        delta_y = 0
+        if "u" in direction:
+            delta_y = -1
+        if "d" in direction:
+            delta_y = 1
+        if "l" in direction:
+            delta_x = -1
+        if "r" in direction:
+            delta_x = 1
+        return delta_x, delta_y
 
     @staticmethod
     def coord_parse(layer, coords):

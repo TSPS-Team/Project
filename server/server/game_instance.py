@@ -45,5 +45,11 @@ class GameInstance:
         return [True, None]
 
     def start_of_week(self):
-        #TODO
-        pass
+        self._global_map.start_of_week()
+
+    def move_hero(self, object_id, direction: str) -> int:
+        return self._global_map.move_hero(object_id, direction)                 # -1 cannot move / 0 all good
+
+    def run(self):
+        while True:
+            pass
