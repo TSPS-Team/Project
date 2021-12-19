@@ -2,7 +2,7 @@ import sqlite3
 
 
 def __sqlite(query: str):
-    con = sqlite3.connect("ttbm.db")
+    con = sqlite3.connect("../resources_manager/ttbm.db")
     cur = con.cursor()
 
     cur.execute(query)
@@ -25,7 +25,6 @@ def sqlite_3_select_identity_name(name: str):
     except IndexError:
         return []
 
-# print(sqlite_3_select_identity_name('Leshqa'))
 
 def sqlite_3_create_statistic(name: str, hours: float, win_rates: float, count_of_wins: int, count_of_plays: int):
     key = __sqlite(f"SELECT key FROM users WHERE name = '{name}'")[0][0]
@@ -56,9 +55,25 @@ def sqlite_3_get_info(name: str):
     return info
 
 
+def sqlite_3_create_view(table: str):
+    __sqlite(f"CREATE VIEW [{table}] AS SELECT users.key, users.name, users.id, users.password, info.date, "
+             f"info.description FROM users INNER JOIN info ON users.key=info.key ORDER BY users.key;")
+
+
+def sqlite_3_get_view(table: str):
+    view = __sqlite(f"SELECT * FROM [{table}]")
+    return view
+
+
+def sqlite_3_drop_view(table: str):
+    __sqlite(f"DROP VIEW [{table}]")
+
 # print(sqlite_3_select_identity_name('Leshqa_Random'))
 # sqlite_3_create_statistic('Leshqa_Random', 0, 0, 0, 0)
 # sqlite_3_update_statistic('Leshqa_Random', 0, 50, 1, 2)
 # print(sqlite_3_get_statistic('Leshqa_Random'))
 # sqlite_3_create_info('Leshqa_Random', '2001-10-18', 'male', 'NULL')
 # print(sqlite_3_get_info('Leshqa_Random'))
+# sqlite_3_create_view("test")
+# print(sqlite_3_get_view("test"))
+# sqlite_3_drop_view("test")
