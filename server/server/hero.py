@@ -29,7 +29,7 @@ class Hero:
 
     def moving(self) -> int:
         if self.able_to_move():
-            self.stamina =- 1
+            self.stamina -= 1
             return 0
         return -1
 
