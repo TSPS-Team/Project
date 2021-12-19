@@ -20,16 +20,17 @@ class GlobalMap:
         self.global_map_armies = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)         # heroes and items
         self.global_map_passable = np.full((config.gl_map_height, config.gl_map_width), True, dtype=np.bool_)
 
-        self.global_map_fog = np.full((config.player_amount, config.gl_map_height, config.gl_map_width), False, dtype=np.bool_)
-
-        self.global_map_object_backcall = np.full((2, config.gl_map_height, config.gl_map_width), None, dtype=np.object_)       # [0] castle; [1] hero
-        self.players_castle_hero = self.create_players_castle_hero()                                                # list of objects that belong to players: neutral[0]; player1[1]...
-        self.global_map_object_items = np.full((config.gl_map_height, config.gl_map_width), None, dtype=np.object_)             # items
+        self.global_map_fog = np.full((config.player_amount + 1, config.gl_map_height, config.gl_map_width), False, dtype=np.bool_)
 
         if unit_dict is None:
             self.unit_dict = unit_dictionary.UnitDictionary().stat_dictionary
         else:
             self.unit_dict = unit_dict
+
+        self.global_map_object_backcall = np.full((2, config.gl_map_height, config.gl_map_width), None, dtype=np.object_)       # [0] castle; [1] hero
+        self.players_castle_hero = self.create_players_castle_hero()                                                # list of objects that belong to players: neutral[0]; player1[1]...
+        self.global_map_object_items = np.full((config.gl_map_height, config.gl_map_width), None, dtype=np.object_)             # items
+
 
     def create_players_castle_hero(self) -> list:
         castles_heroes = []
@@ -57,8 +58,8 @@ class GlobalMap:
         if self.global_map_passable[current_coord[1]+delta_coord[1],current_coord[0]+delta_coord[0]] and self.players_castle_hero[player].heroes[object_id_local].able_to_move():
             self.global_map_armies[current_coord[1]+delta_coord[1], current_coord[0]+delta_coord[0]] = self.global_map_armies[current_coord[1], current_coord[0]]
             self.global_map_armies[current_coord[1], current_coord[0]] = 0
-            self.global_map_object_backcall[current_coord[1]+delta_coord[1], current_coord[0]+delta_coord[0]] = self.global_map_object_backcall[current_coord[1], current_coord[0]]
-            self.global_map_object_backcall[current_coord[1], current_coord[0]] = None
+            self.global_map_object_backcall[1, current_coord[1]+delta_coord[1], current_coord[0]+delta_coord[0]] = self.global_map_object_backcall[1, current_coord[1], current_coord[0]]
+            self.global_map_object_backcall[1, current_coord[1], current_coord[0]] = None
             self.players_castle_hero[player].heroes_coord[object_id_local] = (current_coord[0]+delta_coord[0], current_coord[1]+delta_coord[1])
 
             self.global_map_passable[current_coord[1], current_coord[0]] = True
@@ -115,6 +116,9 @@ class GlobalMap:
 
     def get_hero_stamina(self, object_id) -> int:
         return self.players_castle_hero[object_id[0]].heroes[object_id[2]].get_stamina()
+
+    def get_hero_position(self, object_id) -> tuple:
+        return self.players_castle_hero[object_id[0]].heroes_coord[object_id[2]]
 
     @staticmethod
     def direction_parse(direction: str) -> tuple:
