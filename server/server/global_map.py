@@ -136,7 +136,7 @@ class GlobalMap:
 
     @staticmethod
     def coord_parse(layer: int, coords: tuple) -> tuple:
-        return layer, coords[0], coords[1]
+        return layer, coords[1], coords[0]
 
     @staticmethod
     def get_passable(chunk_id) -> bool:
