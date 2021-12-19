@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 from .db_map import DBMap
 from . import game_config
@@ -19,14 +20,14 @@ class GlobalMap:
         self.global_map_armies = np.zeros((config.gl_map_height, config.gl_map_width), dtype=np.uint16)         # heroes and items
         self.global_map_passable = np.full((config.gl_map_height, config.gl_map_width), True, dtype=np.bool_)
 
-        self.global_map_fog = np.zeros((config.player_amount, config.gl_map_height, config.gl_map_width), dtype=np.uint8)
+        self.global_map_fog = np.full((config.player_amount, config.gl_map_height, config.gl_map_width), False, dtype=np.bool_)
 
         self.global_map_object_backcall = np.full((2, config.gl_map_height, config.gl_map_width), None, dtype=np.object_)       # [0] castle; [1] hero
         self.players_castle_hero = self.create_players_castle_hero()                                                # list of objects that belong to players: neutral[0]; player1[1]...
         self.global_map_object_items = np.full((config.gl_map_height, config.gl_map_width), None, dtype=np.object_)             # items
 
         if unit_dict is None:
-            self.unit_dict = unit_dictionary.UnitDictionary()
+            self.unit_dict = unit_dictionary.UnitDictionary().stat_dictionary
         else:
             self.unit_dict = unit_dict
 
@@ -52,17 +53,54 @@ class GlobalMap:
         object_id_local = object_id[2]
         delta_coord = self.direction_parse(direction)
         current_coord = self.players_castle_hero[player].heroes_coord[object_id_local]
-        if self.global_map_passable[current_coord[0]+delta_coord[0],current_coord[1]+delta_coord[1]]:
-            self.global_map_armies[current_coord[0]+delta_coord[0], current_coord[1]+delta_coord[1]] = self.global_map_armies[current_coord[0], current_coord[1]]
-            self.global_map_armies[current_coord[0], current_coord[1]] = 0
-            self.global_map_object_backcall[current_coord[0]+delta_coord[0], current_coord[1]+delta_coord[1]] = self.global_map_object_backcall[current_coord[0], current_coord[1]]
-            self.global_map_object_backcall[current_coord[0], current_coord[1]] = None
+        if self.global_map_passable[current_coord[1]+delta_coord[1],current_coord[0]+delta_coord[0]] and self.players_castle_hero[player].heroes[object_id_local].able_to_move():
+            self.global_map_armies[current_coord[1]+delta_coord[1], current_coord[0]+delta_coord[0]] = self.global_map_armies[current_coord[1], current_coord[0]]
+            self.global_map_armies[current_coord[1], current_coord[0]] = 0
+            self.global_map_object_backcall[current_coord[1]+delta_coord[1], current_coord[0]+delta_coord[0]] = self.global_map_object_backcall[current_coord[1], current_coord[0]]
+            self.global_map_object_backcall[current_coord[1], current_coord[0]] = None
             self.players_castle_hero[player].heroes_coord[object_id_local] = (current_coord[0]+delta_coord[0], current_coord[1]+delta_coord[1])
+
+            self.global_map_passable[current_coord[1], current_coord[0]] = True
+            self.global_map_passable[current_coord[1]+delta_coord[1], current_coord[0]+delta_coord[0]] = False
+            self.update_global_map_fog((current_coord[0]+delta_coord[0], current_coord[1]+delta_coord[1]), player)
+
+            self.players_castle_hero[player].heroes[object_id_local].moving()
             return 0
         return -1
 
+    def start_of_day(self):
+        pass
+
     def start_of_week(self):
         pass
+
+    def check_can_move_simultaneously(self) -> bool:
+        pass
+
+    def update_global_map_fog(self, coord: tuple, player_id: int, visibility_radius: int=7):
+        for i in range(-visibility_radius, visibility_radius+1):
+            for j in range(-visibility_radius, visibility_radius+1):
+                if math.floor(math.sqrt(i*i+j*j)) <= visibility_radius:
+                    fog_coord = self.board_coord((coord[0]+j, coord[1]+i))
+                    self.global_map_fog[player_id, fog_coord[1], fog_coord[0]] = True
+
+    def board_coord(self, coord: tuple) -> tuple:
+        x = coord[0]
+        y = coord[1]
+        if x < 0: x = 0
+        if x >= self.config.gl_map_width: x = self.config.gl_map_width-1
+        if y < 0: y = 0
+        if y >= self.config.gl_map_height: y = self.config.gl_map_height-1
+        return x, y
+
+    def update_passable(self):
+        for i in range(self.config.gl_map_height):
+            for j in range(self.config.gl_map_width):
+                if (self.get_passable(self.global_map_first[i, j])) and (self.get_passable(self.global_map_second[i, j])) and \
+                        (self.get_passable(self.global_map_objects[i, j])) and (self.get_passable(self.global_map_armies[i, j])):
+                    self.global_map_passable[i, j] = True
+                else:
+                    self.global_map_passable[i, j] = False
 
     def change_map_chunk(self, x_coord: int, y_coord: int, layer: int, new_id: int):
         if layer == 0:
@@ -74,14 +112,8 @@ class GlobalMap:
         else:
             self.global_map_armies[y_coord, x_coord] = new_id
 
-    def update_passable(self):
-        for i in range(self.config.gl_map_height):
-            for j in range(self.config.gl_map_width):
-                if (self.get_passable(self.global_map_first[i, j])) and (self.get_passable(self.global_map_second[i, j])) and \
-                        (self.get_passable(self.global_map_objects[i, j])) and (self.get_passable(self.global_map_armies[i, j])):
-                    self.global_map_passable[i, j] = True
-                else:
-                    self.global_map_passable[i, j] = False
+    def get_hero_stamina(self, object_id) -> int:
+        return self.players_castle_hero[object_id[0]].heroes[object_id[2]].get_stamina()
 
     @staticmethod
     def direction_parse(direction: str) -> tuple:

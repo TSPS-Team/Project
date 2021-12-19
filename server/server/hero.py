@@ -12,10 +12,29 @@ class Hero:
         self.magic_resist = magic_resist
         self.mana = mana
         self.speed = speed
+        self.stamina = speed
 
         self.army = np.full(7, None, dtype=np.object_)
 
         self.magic_book = None
+
+    def get_stamina(self) -> int:
+        return self.stamina
+
+    def recover_stamina(self, recovery: int=None):
+        if recovery is None:
+            self.stamina = self.speed
+        else:
+            self.stamina += recovery
+
+    def moving(self) -> int:
+        if self.able_to_move():
+            self.stamina =- 1
+            return 0
+        return -1
+
+    def able_to_move(self) -> bool:
+        return True if self.stamina>0 else False
 
     @staticmethod
     def generate_name() -> str:

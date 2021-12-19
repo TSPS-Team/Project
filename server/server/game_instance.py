@@ -28,28 +28,25 @@ class GameInstance:
 
     def next_day(self):
         self.day_of_week = self.day_of_week.next()
+        self._global_map.start_of_day()
 
         if self.day_of_week == DayOfWeek.Monday:
             self.start_of_week()
         #TODO
 
-        can_move, player = self.check_can_move_simultaniously()
+        can_move, player = self.check_can_move_simultaneously()
         if can_move:
             return ServerState(GlobalState.WaitingForActionEvery)
         else:
             #TODO
             return ServerState(GlobalState.WaitingForActionOne, player=player)
 
-    def check_can_move_simultaniously(self):
+    def check_can_move_simultaneously(self):
         #TODO
-        return [True, None]
+        return self._global_map.check_can_move_simultaneously()
 
     def start_of_week(self):
         self._global_map.start_of_week()
 
     def move_hero(self, object_id, direction: str) -> int:
         return self._global_map.move_hero(object_id, direction)                 # -1 cannot move / 0 all good
-
-    def run(self):
-        while True:
-            pass
