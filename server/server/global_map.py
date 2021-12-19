@@ -33,17 +33,18 @@ class GlobalMap:
 
     def create_players_castle_hero(self) -> list:
         castles_heroes = []
-        for i in range(self.config.player_amount+1):
+        for player_id in range(self.config.player_amount+1):
             castle_type = "rampart"
             default_castle = castle.Castle(self.unit_dict, castle_type)
-            default_hero = hero.Hero(player_id=i)
-            temp_castle_coord = (10*i, 10*i)
-            temp_hero_coord = (10*i, 10*i+1)
+            default_hero = hero.Hero(player_id=player_id)
+            temp_castle_coord = (10*player_id, 10*player_id)
+            temp_hero_coord = (10*player_id, 10*player_id+1)
+            self.update_global_map_fog(temp_hero_coord, player_id)
             object_castle_hero = object_wrapper.ObjectWrapper(default_castle, temp_castle_coord, default_hero, temp_hero_coord)
             castles_heroes.append(object_castle_hero)
-            object_path_castle = object_pathlike.ObjectPathlike(i, "castle", 0)
+            object_path_castle = object_pathlike.ObjectPathlike(player_id, "castle", 0)
             self.global_map_object_backcall[self.coord_parse(0, temp_castle_coord)] = object_path_castle
-            object_path_hero = object_pathlike.ObjectPathlike(i, "hero", 0)
+            object_path_hero = object_pathlike.ObjectPathlike(player_id, "hero", 0)
             self.global_map_object_backcall[self.coord_parse(1, temp_hero_coord)] = object_path_hero
 
         return castles_heroes
@@ -130,7 +131,7 @@ class GlobalMap:
         return delta_x, delta_y
 
     @staticmethod
-    def coord_parse(layer, coords):
+    def coord_parse(layer: int, coords: tuple) -> tuple:
         return layer, coords[0], coords[1]
 
     @staticmethod
