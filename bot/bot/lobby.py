@@ -8,6 +8,8 @@ from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext, ConversationHandler, \
     MessageHandler, Filters
 
+from .app_info import AppInfo
+
 MAX_PLAYERS = 8
 
 @unique
@@ -38,10 +40,10 @@ class LobbyState:
         ]
     )
 
-    def __init__(self, player: Player, bot: Bot, lobby_manager):
+    def __init__(self, player: Player, bot: Bot, app_info: AppInfo):
         self.player = player
         self.bot = bot
-        self.lobby_manager = lobby_manager
+        self.app_info = app_info
 
         lobby = self.player.lobby
         markup = self.host_choice if self.player.lobby.host.id == self.player.id else self.lobby_choice
@@ -88,7 +90,7 @@ class LobbyState:
         if call_data == "quit":
             lobby = self.player.lobby
             self.player.lobby.leave(self.player)
-            self.player.state = MenuState(self.player, self.bot, self.lobby_manager)
+            self.player.state = MenuState(self.player, self.bot, self.app_info)
 
             for player in lobby.players.values():
                 player.state.update()
@@ -116,10 +118,10 @@ class MenuState:
         ]
     )
 
-    def __init__(self, player, bot: Bot, lobby_manager: LobbyManager):
+    def __init__(self, player, bot: Bot, app_info: AppInfo):
         self.player = player
         self.bot = bot
-        self.lobby_manager = lobby_manager
+        self.app_info = app_info
         self.wait_for_uid = False
 
         self.menu_message = bot.send_message(
@@ -132,25 +134,25 @@ class MenuState:
         call_data = update.callback_query.data
 
         if call_data == "public":
-            self.player.lobby = self.lobby_manager.connect_any(self.player)
-            self.player.state = LobbyState(self.player, self.bot, self.lobby_manager)
+            self.player.lobby = self.app_info.lobby_manager.connect_any(self.player)
+            self.player.state = LobbyState(self.player, self.bot, self.app_info)
         elif call_data == "private":
             self.wait_for_uid = True
             self.bot.send_message(chat_id=self.player.id, text="Enter lobby UID:")
         elif call_data == "create":
-            self.player.lobby = self.lobby_manager.new_private(self.player)
-            self.player.state = LobbyState(self.player, self.bot, self.lobby_manager)
+            self.player.lobby = self.app_info.lobby_manager.new_private(self.player)
+            self.player.state = LobbyState(self.player, self.bot, self.app_info)
 
 
     def text_callback(self, update: Update, context):
         if self.wait_for_uid:
             try:
-                self.lobby_manager.connect_private(self.player, update.message.text)
-                self.player.state = LobbyState(self.player, self.bot, self.lobby_manager)
+                self.app_info.lobby_manager.connect_private(self.player, update.message.text)
+                self.player.state = LobbyState(self.player, self.bot, self.app_info)
             except:
                 update.message.reply_text("No lobby with such uid found.")
                 self.wait_for_uid = False
-                self.player.state = MenuState(self.player, self.bot, self.lobby_manager)
+                self.player.state = MenuState(self.player, self.bot, self.app_info)
 
 
     def state(self):

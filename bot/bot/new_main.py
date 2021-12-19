@@ -13,7 +13,10 @@ ready_1 = False
 players = {}
 
 from .lobby import LobbyManager, LobbyState, MenuState, Player
-lobby_manager = LobbyManager()
+from .app_info import AppInfo
+app_info = AppInfo()
+app_info.lobby_manager = LobbyManager()
+
 
 DEV_TEST = True
 
@@ -183,19 +186,6 @@ class Handler:
 
 
 class CallbackQuery:
-    def callback_main_menu_handler(update: Update, context: CallbackContext):
-        call_data = update.callback_query.data
-        player = players[update.effective_user.id]
-
-        if call_data == "public":
-            player.lobby = lobby_manager.connect_any(player)
-            player.state = LobbyState(player)
-            return LOBBY
-        elif call_data == "private":
-            pass
-        elif call_data == "create":
-            pass
-
     def callback_query_start_handler(update: Update, context: CallbackContext):
         call_data = update.callback_query.data
         chat_id = update.callback_query.message.chat.id
@@ -296,7 +286,7 @@ def dev_start_handler(update: Update, context: CallbackContext):
     user = update.effective_user
     player = Player(user.first_name, user.id)
     players[player.id] = player
-    player.state = MenuState(player, context.bot, lobby_manager)
+    player.state = MenuState(player, context.bot, app_info)
 
     return LOGGEDIN
 
