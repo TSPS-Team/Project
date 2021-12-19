@@ -50,3 +50,6 @@ class GameInstance:
 
     def move_hero(self, object_id, direction: str) -> int:
         return self._global_map.move_hero(object_id, direction)                 # -1 cannot move / 0 all good
+
+    def get_hero_position(self, object_id) -> tuple:
+        return self._global_map.get_hero_position(object_id)
