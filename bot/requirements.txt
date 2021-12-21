@@ -4,3 +4,4 @@ redis==4.0.2
 python-telegram-bot==13.8.1
 numpy==1.21.2
 pymongo=4.0.1
+redislite==6.0.674960

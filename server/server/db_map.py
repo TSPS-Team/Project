@@ -53,10 +53,8 @@ class DBMap:
     def is_castle(object):
         return DBMap.property(object, "Type", {}).get("value") == "Castle"
 
-    def __init__(self, image_json, entities_tileset, *tilesets):
+    def __init__(self, image_json):
         self.json = image_json
-        self.entities_tileset = entities_tileset
-        self.tilesets = [*tilesets]
 
     def validate(self):
         pass

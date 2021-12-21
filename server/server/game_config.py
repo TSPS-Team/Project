@@ -18,10 +18,12 @@ class Config:
         self.gl_map_height = db_map.json["height"]
         self.gl_map_width = db_map.json["width"]
 
+        #import pdb
+        #pdb.set_trace()
         #player amount is equal to number of teams
         #number of playable teams is equal to number
         #of castles with different teams execept neutral
-        self.playable_teams = {DBMap.property(obj, "Team", 0)
-                               for obj in db_map.objects()
-                               if DBMap.is_castle(obj)} - {0}
+        #self.playable_teams = {DBMap.property(obj, "Team", 0)
+        #                       for obj in db_map.objects()
+        #                       if DBMap.is_castle(obj)} - {0}
         self.player_amount = len(self.playable_teams)

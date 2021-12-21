@@ -24,16 +24,16 @@ class Interface:
         self.server.end_move(player_id)
 
     def get_image(self, position, player_id) -> Image.Image:
-        return self.server.get_image(self, position, player_id)
+        return self.server.get_image(position, player_id)
 
 class Server:
-    def __init__(self, m : DBMap):
+    def __init__(self, m: DBMap, unit_data):
         self.game_map = self._load_map(m)
         self.state = ServerState(GlobalState.Uninitialized)
 
         #NOTE Just for prototype
         self.player_pos = (20, 20)
-        self.renderer = TilesetRenderer(self.game_map.tilesets[0])
+        self.renderer = TilesetRenderer(self.game_map.json["tilesets"])
 
         self._game_instance = GameInstance(m)
 
@@ -56,22 +56,22 @@ class Server:
         layers = []
         for layer in self.game_map.json["layers"]:
             if "data" in layer:
-                layers.append([x - 1 if x != 0 else 0 for x in layer["data"]])
+                layers.append([x if x != 0 else 0 for x in layer["data"]])
 
         view = self.renderer.draw(layers, self.game_map.json["width"],
                                   self.game_map.json["height"])
 
-        view.paste(self.game_map.entities_tileset.get(13),
-                   (self.player_pos[0] * 16, self.player_pos[1] * 16),
-                   self.game_map.entities_tileset.get(13)
-                   )
-
-        for layer in self.game_map.json["layers"]:
-            if "objects" in layer:
-                for obj in layer["objects"]:
-                    view.paste(self.game_map.tilesets[0].get(obj["gid"] - 1),
-                               (obj["x"], obj["y"] - self.game_map.tilesets[0].tileheight),
-                               self.game_map.tilesets[0].get(obj["gid"] - 1))
+#        view.paste(self.game_map.entities_tileset.get(13),
+#                   (self.player_pos[0] * 16, self.player_pos[1] * 16),
+#                   self.game_map.entities_tileset.get(13)
+#                   )
+#
+#        for layer in self.game_map.json["layers"]:
+#            if "objects" in layer:
+#                for obj in layer["objects"]:
+#                    view.paste(self.game_map.tilesets[0].get(obj["gid"] - 1),
+#                               (obj["x"], obj["y"] - self.game_map.tilesets[0].tileheight),
+#                               self.game_map.tilesets[0].get(obj["gid"] - 1))
 
         return view
 
