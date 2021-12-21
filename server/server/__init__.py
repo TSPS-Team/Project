@@ -1,35 +1,47 @@
 #!/usr/bin/env python3
 
 from .server import *
-import argparse
-import json
 from PIL import Image
 from pathlib import Path
+from pymongo import MongoClient
 
+class Connect(object):
+    connection: MongoClient
+    connection = None
+    url_pattern = "mongodb://{}:{}@{}/{}?authSource={}"
+
+    @staticmethod
+    def get_connection() -> MongoClient:
+        if Connect.connection is None:
+            username = "root"
+            password = "password"
+            hostlist = "185.199.99.158:8003"
+            database = "units"
+            authSource = "admin"
+            url = Connect.url_pattern.format(username,password,hostlist,database,authSource)
+            Connect.connection = MongoClient(url)
+        return Connect.connection
+
+    @staticmethod
+    def get_random_map() -> DBMap:
+        db = Connect.connection["units"]
+
+        maps_collection = db["maps"]
+
+        jon = maps_collection.find_one()
+
+        return DBMap(jon)
+
+    @staticmethod
+    def get_unit_data():
+        db = Connect.connection["units"]
+
+        units_collection = db["units"]
+        return units_collection.find_one()
 
 def main():
-    parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument("map_json", type=Path, help="Path to map json")
-    parser.add_argument("map_tileset_json", type=Path, help="Path to tileset json")
-    parser.add_argument("map_image_path", type=Path,
-                        help="Path to image")
-    parser.add_argument("entities_tileset_json", type=Path,
-                        help="Path to entities tileset json")
-    parser.add_argument("entities_image_path", type=Path, help="Path to image")
-    args = parser.parse_args()
-
-    server = None
-    with args.map_json.open() as m:
-        with args.map_tileset_json.open() as t:
-            with args.entities_tileset_json.open() as e:
-                with args.map_image_path.open("rb") as i:
-                    with args.entities_image_path.open("rb") as ei:
-                        m = DBMap(json.load(m),
-                                  Tileset(json.load(e),
-                                          ei.read()),
-                                  Tileset(json.load(t),
-                                          i.read()))
-                        server = Server(m)
+    Connect.get_connection()
+    server = Server(Connect.get_random_map(), Connect.get_unit_data())
 
     interface = server.get_interface()
 

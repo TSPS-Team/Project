@@ -23,7 +23,7 @@ class GlobalMap:
         self.global_map_fog = np.full((config.player_amount + 1, config.gl_map_height, config.gl_map_width), False, dtype=np.bool_)
 
         if unit_dict is None:
-            self.unit_dict = unit_dictionary.UnitDictionary().stat_dictionary
+            self.unit_dict = unit_dictionary.UnitDictionary()
         else:
             self.unit_dict = unit_dict
 

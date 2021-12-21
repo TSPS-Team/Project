@@ -11,4 +11,4 @@ class GlobalState(Enum):
 class ServerState:
     def __init__(self, global_state : GlobalState, **args):
         self.state = global_state
-        self.args = {args}
+        self.args = {**args}

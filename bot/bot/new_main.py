@@ -1,8 +1,8 @@
 from telegram import Bot, InlineKeyboardButton, InlineKeyboardMarkup, Update
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext, ConversationHandler, \
     MessageHandler, Filters
-from .config import bot_token
-from .resources_manager.sql import sqlite_3_add_user, sqlite_3_select_identity_name
+from bot.bot.config import bot_token
+from bot.bot.resources_manager.sql import sqlite_3_add_user, sqlite_3_select_identity_name
 
 import server
 import json
@@ -12,8 +12,9 @@ count_1 = 0
 ready_1 = False
 players = {}
 
-from .lobby import LobbyManager, LobbyState, MenuState, Player
-from .app_info import AppInfo
+from bot.bot.lobby import LobbyManager
+from bot.bot.logged_in_states import *
+from bot.bot.app_info import AppInfo
 app_info = AppInfo()
 app_info.lobby_manager = LobbyManager()
 
@@ -286,7 +287,7 @@ def dev_start_handler(update: Update, context: CallbackContext):
     user = update.effective_user
     player = Player(user.first_name, user.id)
     players[player.id] = player
-    player.state = MenuState(player, context.bot, app_info)
+    player.state = MenuState(player, app_info)
 
     return LOGGEDIN
 
@@ -294,6 +295,7 @@ def dev_start_handler(update: Update, context: CallbackContext):
 def main():
 
     bot = Bot(token=bot_token)
+    app_info.bot = bot
     updater = Updater(bot=bot)
 
 
