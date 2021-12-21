@@ -1,3 +1,4 @@
+import random
 from pymongo import MongoClient
 from server.db_map import DBMap
 
@@ -19,17 +20,17 @@ class Connect(object):
         return Connect.connection
 
     @staticmethod
-    def get_random_map() -> DBMap:
+    def pick_random_map() -> DBMap:
         db = Connect.connection["units"]
 
         maps_collection = db["maps"]
 
-        jon = maps_collection.find_one()
+        jon = random.choice([*maps_collection.find()])
 
         return DBMap(jon)
 
     @staticmethod
-    def get_map_by_player_count(player_count) -> DBMap:
+    def pick_map_by_player_count(player_count) -> DBMap:
         db = Connect.connection["units"]
 
         maps_collection = db["maps"]

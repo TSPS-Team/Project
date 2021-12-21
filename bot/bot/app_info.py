@@ -19,7 +19,7 @@ class AppInfo:
 
     def new_game(self, uid: str, *players: Player):
 
-        m = Connect.get_random_map()
+        m = Connect.pick_random_map()
         data = Connect.get_unit_data()
 
         serv = Server(m, data)

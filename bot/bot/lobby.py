@@ -11,6 +11,7 @@ from telegram.message import Message
 
 from bot.bot.app_info import AppInfo
 from bot.bot.base import Player
+from bot.bot.redis_connect import get_reddis_connection
 
 MAX_PLAYERS = 2
 
@@ -21,14 +22,19 @@ class Lobby:
         self.players = {}
         self.host = None
         self.is_open = is_open
+        self.redis_connection = get_reddis_connection()
+
+        self.redis_connection.set(self.uid + ":is_open", int(self.is_open))
 
     def new_player(self, player: Player):
         assert len(self.players) < MAX_PLAYERS
 
         if len(self.players) == 0:
             self.host = player
+            self.redis_connection.set(self.uid + ":host", player.id)
 
         self.players[player.id] = player
+        self.redis_connection.hset(self.uid + ":" + str(player.id), "name", player.name)
         player.lobby = self
 
     def leave(self, player):
@@ -37,14 +43,18 @@ class Lobby:
         if player.id == self.host.id:
             try:
                 self.host = random.choice([*self.players.values()])
+                self.redis_connection.set(self.uid + ":host", self.host.id)
             except:
                 self.host = None
+                self.redis_connection.delete(self.uid + ":host")
 
         player.lobby = None
         self.players.pop(player.id)
+        self.redis_connection.delete(self.uid + ":" + str(player.id))
 
         if len(self.players) == 0:
             self.is_open = True
+            self.redis_connection.set(self.uid + ":is_open", int(True))
 
 
 class LobbyManager:
