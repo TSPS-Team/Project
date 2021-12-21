@@ -13,7 +13,7 @@ from bot.bot.app_info import AppInfo
 from bot.bot.base import Player
 from bot.bot.redis_connect import get_reddis_connection
 
-MAX_PLAYERS = 2
+MAX_PLAYERS = 8
 
 
 class Lobby:

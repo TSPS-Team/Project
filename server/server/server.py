@@ -96,7 +96,7 @@ class Server:
             for x in range(bbox[0], bbox[2]):
                 for y in range(bbox[1], bbox[3]):
                     if not is_in_fog(x, y):
-                        backcall = self._game_instance._global_map.global_map_object_backcall[layer, x, y]
+                        backcall = self._game_instance._global_map.global_map_object_backcall[layer, y, x]
                         if backcall is not None:
                             self.renderer.put(base, x, y,
                                               gid_dic[backcall.object_type],
