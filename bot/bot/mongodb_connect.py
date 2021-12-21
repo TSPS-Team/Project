@@ -29,6 +29,19 @@ class Connect(object):
         return DBMap(jon)
 
     @staticmethod
+    def get_map_by_player_count(player_count) -> DBMap:
+        db = Connect.connection["units"]
+
+        maps_collection = db["maps"]
+
+        jon = maps_collection.find_one({
+            "properties": {
+                '$elemMatch': {"name": "Teams", "value": player_count}
+            }})
+
+        return DBMap(jon)
+
+    @staticmethod
     def get_unit_data():
         db = Connect.connection["units"]
 

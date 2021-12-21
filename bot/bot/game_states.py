@@ -27,9 +27,9 @@ def str_to_coord(s: str) -> tuple[int, int]:
     if "l" in s:
         result = add(result, (-1, 0))
     if "u" in s:
-        result = add(result, (0, 1))
-    if "d" in s:
         result = add(result, (0, -1))
+    if "d" in s:
+        result = add(result, (0, 1))
     if "r" in s:
         result = add(result, (1, 0))
     return result
@@ -53,6 +53,10 @@ class CameraState(MapState):
     def get_message_data(self, new=False):
         reply_markup = InlineKeyboardMarkup(
             inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="Camera", callback_data="c"),
+                    InlineKeyboardButton(text="Hero", callback_data="h")
+                ],
                 [
                     InlineKeyboardButton(text="↖",
                                          callback_data="camera_lu"),
@@ -128,6 +132,13 @@ class CameraState(MapState):
                 coord = str_to_coord(call_data[1])
                 self.position = add(self.position, coord)
                 self.update()
+        elif call_data[0] == "hero":
+            if call_data[1] != "center":
+                id = self.player.game.get_player_id(self.player)
+                self.player.game.server._game_instance.move_hero((id, "hero", 0), call_data[1])
+
+                for player in self.player.game.players:
+                    player.state.update()
 
     def text_callback(self, update, context):
         pass

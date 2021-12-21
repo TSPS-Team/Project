@@ -11,8 +11,8 @@ class Hero:
         self.intelligence = intelligence
         self.magic_resist = magic_resist
         self.mana = mana
-        self.speed = speed
-        self.stamina = speed
+        self.speed = speed + 1000
+        self.stamina = speed + 1000
 
         self.army = np.full(7, None, dtype=np.object_)
 

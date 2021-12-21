@@ -31,11 +31,18 @@ class Server:
         self.game_map = self._load_map(m)
         self.state = ServerState(GlobalState.Uninitialized)
 
-        #NOTE Just for prototype
-        self.player_pos = (20, 20)
-        self.renderer = TilesetRenderer(self.game_map.json["tilesets"])
-
+        self.renderer = TilesetRenderer(self.game_map.json["tilesets"], self.game_map.json["width"]
+                                        , self.game_map.json["height"])
         self._game_instance = GameInstance(m)
+
+
+        # Prepare template image
+        layers = []
+        for layer in self.game_map.json["layers"]:
+            if "data" in layer:
+                layers.append([x if x != 0 else 0 for x in layer["data"]])
+
+        self.renderer.template = self.renderer.draw(layers)
 
 
     def begin(self):
@@ -53,27 +60,56 @@ class Server:
 
     def get_image(self, position, player_id):
         #NOTE Just for prototype
-        layers = []
-        for layer in self.game_map.json["layers"]:
-            if "data" in layer:
-                layers.append([x if x != 0 else 0 for x in layer["data"]])
 
-        view = self.renderer.draw(layers, self.game_map.json["width"],
-                                  self.game_map.json["height"])
+        base = self.renderer.template.copy()
 
-#        view.paste(self.game_map.entities_tileset.get(13),
-#                   (self.player_pos[0] * 16, self.player_pos[1] * 16),
-#                   self.game_map.entities_tileset.get(13)
-#                   )
-#
-#        for layer in self.game_map.json["layers"]:
-#            if "objects" in layer:
-#                for obj in layer["objects"]:
-#                    view.paste(self.game_map.tilesets[0].get(obj["gid"] - 1),
-#                               (obj["x"], obj["y"] - self.game_map.tilesets[0].tileheight),
-#                               self.game_map.tilesets[0].get(obj["gid"] - 1))
+        bbox = (position[0] - 9, position[1] - 9,
+                position[0] + 10, position[1] + 10)
 
-        return view
+        tilewidth = self.renderer.tilesets[0].tilewidth
+        tileheight = self.renderer.tilesets[0].tileheight
+
+        def is_in_fog(x, y):
+            coord = self._game_instance._global_map.board_coord((x, y))
+            return not self._game_instance._global_map.global_map_fog[player_id, coord[1], coord[0]]
+
+        for x in range(bbox[0], bbox[2]):
+            for y in range(bbox[1], bbox[3]):
+                if is_in_fog(x, y):
+                    self.renderer.apply_image(base, x, y, self.renderer.fog)
+
+        gid_dic = {
+            "rampart": 339,
+            "castle": 337,
+            "hero": 13 + 625
+        }
+
+        colors = {
+            0: (255, 255, 255, 200),
+            1: (0, 255, 255, 155),
+            2: (255, 0, 255, 155),
+            3: (255, 255, 0, 155),
+            4: (0, 255, 0, 155)
+        }
+
+        for layer in range(2):
+            for x in range(bbox[0], bbox[2]):
+                for y in range(bbox[1], bbox[3]):
+                    if not is_in_fog(x, y):
+                        backcall = self._game_instance._global_map.global_map_object_backcall[layer, x, y]
+                        if backcall is not None:
+                            self.renderer.put(base, x, y,
+                                              gid_dic[backcall.object_type],
+                                              colors[backcall.team])
+
+
+        base = base.crop((bbox[0] * tilewidth, bbox[1] * tileheight,
+                          bbox[2] * tilewidth, bbox[3] * tileheight))
+
+        maxsize = (1028, 1028)
+        base = base.resize(maxsize, Image.NEAREST)
+
+        return base
 
     def move(self, player_id, direction):
         #NOTE Just for prototype
